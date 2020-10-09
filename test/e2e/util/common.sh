@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
+
+
+# Sys Args
 GIT_ROOT=$(git rev-parse --show-toplevel)
 BENCHMARK_DIR=$GIT_ROOT/test/e2e/benchmarks
 RESOURCE_DIR=$GIT_ROOT/test/e2e/resources
 RUNNER_DIR=$GIT_ROOT/test/e2e/runners
 ERRORED=false
-image_location=${RIPSAW_CI_IMAGE_LOCATION:-quay.io}
-image_account=${RIPSAW_CI_IMAGE_ACCOUNT:-rht_perf_ci}
+
+
+# Metadata Reporting Args
 es_server=${ES_SERVER:-foo.esserver.com}
 es_port=${ES_PORT:-80}
+
+# Image Args
+image_location=${RIPSAW_CI_IMAGE_LOCATION:-quay.io}
+image_account=${RIPSAW_CI_IMAGE_ACCOUNT:-rht_perf_ci}
+
 echo "using container image location $BENCHMARK_OPERATOR_IMAGE"
 
 function populate_test_list {
@@ -54,6 +63,7 @@ function populate_test_list {
   done
 }
 
+# enable metadata collection for specific test
 function enable_metadata(){
   if [[ ! -z "$ES_SERVER" ]]; then 
       cat $1 | yq w - 'spec.elasticsearch.server' $ES_SERVER | yq w - 'spec.elasticsearch.port' ${ES_PORT:-80}
@@ -177,34 +187,6 @@ function error {
   kubectl -n my-ripsaw logs -l name=benchmark-operator -c ansible
 }
 
-function wait_for_backpack() {
-  echo "Waiting for backpack to complete before starting benchmark test"
-
-  uuid=$1
-  count=0
-  max_count=60
-  while [[ $count -lt $max_count ]]
-  do
-    if [[ `kubectl -n my-ripsaw get daemonsets backpack-$uuid` ]]
-    then
-      desired=`kubectl -n my-ripsaw get daemonsets backpack-$uuid | grep -v NAME | awk '{print $2}'`
-      ready=`kubectl -n my-ripsaw get daemonsets backpack-$uuid | grep -v NAME | awk '{print $4}'`
-      if [[ $desired -eq $ready ]]
-      then
-        echo "Backpack complete. Starting benchmark"
-        break
-      fi
-    fi
-    count=$((count + 1))
-    if [[ $count -ne $max_count ]]
-    then
-      sleep 6
-    else
-      echo "Backpack failed to complete. Exiting"
-      exit 1
-    fi
-  done
-}
 
 function check_es() {
   if [[ ${#} != 2 ]]; then

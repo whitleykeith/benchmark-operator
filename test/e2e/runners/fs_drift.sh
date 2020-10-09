@@ -1,31 +1,16 @@
 #!/usr/bin/env bash
-set -xeo pipefail
-
-source tests/common.sh
-
-function finish {
-  if [ $? -eq 1 ] && [ $ERRORED != "true" ]
-  then
-    error
-  fi
-
-  echo "Cleaning up fs_drift"
-  wait_clean
-}
-
-
+#!/usr/bin/env bash
+set -xeEo pipefail
+GIT_ROOT=$(git rev-parse --show-toplevel)
+for f in $GIT_ROOT/test/e2e/util/*.sh; do source $f; done
 trap error ERR
-trap finish EXIT
+trap "finish fs_drift" EXIT
 
 function functional_test_fs_drift {
-  wait_clean
-  apply_operator
   test_name=$1
   cr=$2
   echo "Performing: ${test_name}"
-  kubectl apply -f ${cr}
-  long_uuid=$(get_uuid 20)
-  uuid=${long_uuid:0:8}
+  test_init ${cr}
 
   count=0
   while [[ $count -lt 24 ]]; do
@@ -54,5 +39,5 @@ function functional_test_fs_drift {
 }
 
 figlet $(basename $0)
-functional_test_fs_drift "fs-drift" tests/test_crs/valid_fs_drift.yaml
-functional_test_fs_drift "fs-drift hostpath" tests/test_crs/valid_fs_drift_hostpath.yaml
+functional_test_fs_drift "fs-drift" $BENCHMARK_DIR/fs_drift.yaml
+functional_test_fs_drift "fs-drift hostpath" $BENCHMARK_DIR/fs_drift_hostpath.yaml

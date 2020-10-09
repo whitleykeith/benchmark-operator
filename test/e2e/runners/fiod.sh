@@ -2,7 +2,6 @@
 set -xeEo pipefail
 GIT_ROOT=$(git rev-parse --show-toplevel)
 for f in $GIT_ROOT/test/e2e/util/*.sh; do source $f; done
-
 trap error ERR
 trap "finish fiod $GIT_ROOT/resources/kernel-cache-drop-clusterrole.yaml" EXIT
 

@@ -30,6 +30,35 @@ function functional_test_backpack {
   fi
 }
 
+function wait_for_backpack() {
+  echo "Waiting for backpack to complete before starting benchmark test"
+
+  uuid=$1
+  count=0
+  max_count=60
+  while [[ $count -lt $max_count ]]
+  do
+    if [[ `kubectl -n my-ripsaw get daemonsets backpack-$uuid` ]]
+    then
+      desired=`kubectl -n my-ripsaw get daemonsets backpack-$uuid | grep -v NAME | awk '{print $2}'`
+      ready=`kubectl -n my-ripsaw get daemonsets backpack-$uuid | grep -v NAME | awk '{print $4}'`
+      if [[ $desired -eq $ready ]]
+      then
+        echo "Backpack complete. Starting benchmark"
+        break
+      fi
+    fi
+    count=$((count + 1))
+    if [[ $count -ne $max_count ]]
+    then
+      sleep 6
+    else
+      echo "Backpack failed to complete. Exiting"
+      exit 1
+    fi
+  done
+}
+
 figlet $(basename $0)
 functional_test_backpack daemonset
 functional_test_backpack init
