@@ -6,7 +6,7 @@ source $GIT_ROOT/test/e2e/util/common.sh
 
 
 function test_init {
-  kubectl apply -f $1
+  enable_metadata $1 | kubectl apply -f -
   long_uuid=$(get_uuid 20)
   uuid=${long_uuid:0:8}
 }
@@ -15,9 +15,7 @@ function test_init {
 function apply_operator {
   operator_requirements
   BENCHMARK_OPERATOR_IMAGE=${BENCHMARK_OPERATOR_IMAGE:-"quay.io/benchmark-operator/benchmark-operator:master"}
-  cat resources/operator.yaml | \
-    sed 's#quay.io/benchmark-operator/benchmark-operator:master#'$BENCHMARK_OPERATOR_IMAGE'#' | \
-    kubectl apply -f -
+  cat resources/operator.yaml | yq w - 'spec.template.spec.containers.(name==benchmark-operator).image' $BENCHMARK_OPERATOR_IMAGE | kubectl apply -f -
   kubectl wait --for=condition=available "deployment/benchmark-operator" -n my-ripsaw --timeout=300s
 }
 

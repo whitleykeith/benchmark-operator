@@ -4,9 +4,6 @@ metadata:
   name: byowl-benchmark
   namespace: my-ripsaw
 spec:
-  # elasticsearch:
-  #   server: ES_SERVER
-  #   port: ES_PORT
   metadata:
     collection: true
   workload:

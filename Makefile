@@ -34,10 +34,7 @@ build_image:
 .PHONY: deploy_operator
 deploy_operator: deploy_operator_dependencies
 	BENCHMARK_OPERATOR_IMAGE=${IMAGE_REPO}:${IMAGE_TAG}
-	cat resources/operator.yaml | \
-		sed 's#quay.io/benchmark-operator/benchmark-operator:master#'${IMAGE_REPO}:${IMAGE_TAG}'#' | \
-		sed 's#PullPolicy:\sAlways#'"PullPolicy: IfNotPresent"'#' | \
-		kubectl apply -f -
+	cat resources/operator.yaml | yq w - 'spec.template.spec.containers.(name==benchmark-operator).image' ${BENCHMARK_OPERATOR_IMAGE} | kubectl apply -f -
 	kubectl wait --for=condition=available "deployment/benchmark-operator" -n my-ripsaw --timeout=300s
 
 
@@ -69,5 +66,3 @@ print_env:
 	@echo "Install Namespace: ${INSTALL_NAMESPACE}"
 	@echo "ElasticSearch URL: ${ES_SERVER}"
 	@echo "ElasticSearch Port: ${ES_PORT}"
-
-

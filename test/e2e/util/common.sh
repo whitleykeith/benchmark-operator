@@ -8,7 +8,7 @@ image_location=${RIPSAW_CI_IMAGE_LOCATION:-quay.io}
 image_account=${RIPSAW_CI_IMAGE_ACCOUNT:-rht_perf_ci}
 es_server=${ES_SERVER:-foo.esserver.com}
 es_port=${ES_PORT:-80}
-echo "using container image location $image_location and account $image_account"
+echo "using container image location $BENCHMARK_OPERATOR_IMAGE"
 
 function populate_test_list {
   rm -f tests/iterate_tests
@@ -52,6 +52,14 @@ function populate_test_list {
 
     if [[ $(echo ${test_check} | grep 'test_.*.sh') ]]; then echo ${test_check} >> tests/iterate_tests; fi
   done
+}
+
+function enable_metadata(){
+  if [[ ! -z "$ES_SERVER" ]]; then 
+      cat $1 | yq w - 'spec.elasticsearch.server' $ES_SERVER | yq w - 'spec.elasticsearch.port' ${ES_PORT:-80}
+  else 
+      cat $1 | yq w - 'spec.metadata.collection' 'false'
+  fi 
 }
 
 
