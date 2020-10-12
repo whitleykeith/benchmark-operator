@@ -6,7 +6,12 @@ source $GIT_ROOT/test/e2e/util/common.sh
 
 
 function test_init {
-  enable_metadata $1 | kubectl apply -f -
+  benchmark_name=$1
+  benchmark_profile=$2
+  test_name="$1 - $2"
+  cr=$BENCHMARK_DIR/$1/$2.yaml
+  echo "Performing: ${test_name}"
+  enable_metadata $cr | kubectl apply -f -
   long_uuid=$(get_uuid 20)
   uuid=${long_uuid:0:8}
 }

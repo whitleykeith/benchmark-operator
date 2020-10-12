@@ -6,10 +6,7 @@ trap error ERR
 trap "finish fs_drift" EXIT
 
 function functional_test_fs_drift {
-  test_name=$1
-  cr=$2
-  echo "Performing: ${test_name}"
-  test_init ${cr}
+  test_init fs_drift $1
 
   count=0
   while [[ $count -lt 24 ]]; do
@@ -38,5 +35,5 @@ function functional_test_fs_drift {
 }
 
 figlet $(basename $0)
-functional_test_fs_drift "fs-drift" $BENCHMARK_DIR/fs_drift.yaml
-functional_test_fs_drift "fs-drift hostpath" $BENCHMARK_DIR/fs_drift_hostpath.yaml
+functional_test_fs_drift base
+functional_test_fs_drift hostpath

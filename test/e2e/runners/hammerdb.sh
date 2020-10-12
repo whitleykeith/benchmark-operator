@@ -14,8 +14,7 @@ function initdb_pod {
 
 function functional_test_hammerdb {
   initdb_pod
-  test_init $BENCHMARK_DIR/hammerdb.yaml
-
+  test_init hammerdb $1
   # Wait for the workload pod to run the actual workload
   hammerdb_workload_pod=$(get_pod "app=hammerdb_workload-$uuid" 300)
   kubectl wait --for=condition=Initialized "pods/$hammerdb_workload_pod" --namespace my-ripsaw --timeout=400s
@@ -33,4 +32,4 @@ function functional_test_hammerdb {
 }
 
 figlet $(basename $0)
-functional_test_hammerdb
+functional_test_hammerdb base

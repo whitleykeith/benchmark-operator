@@ -8,7 +8,7 @@ trap "finish backpack resources/backpack_role.yaml" EXIT
 
 function functional_test_backpack {
   backpack_requirements
-  test_init $BENCHMARK_DIR/backpack_$1.yaml
+  test_init backpack $2
 
 
   if [[ $1 == "daemonset" ]]

@@ -8,10 +8,7 @@ trap "finish fiod $GIT_ROOT/resources/kernel-cache-drop-clusterrole.yaml" EXIT
 
 function functional_test_fio {
   kubectl apply -f $GIT_ROOT/resources/kernel-cache-drop-clusterrole.yaml
-  test_name=$1
-  cr=$2
-  echo "Performing: ${test_name}"
-  test_init $cr
+  test_init fiod $1
 
 
   pod_count "app=fio-benchmark-$uuid" 2 300  
@@ -33,6 +30,7 @@ function functional_test_fio {
 
 figlet $(basename $0)
 kubectl label nodes -l node-role.kubernetes.io/worker=kernel-cache-dropper=yes --overwrite || true
-functional_test_fio "Fio distributed" $BENCHMARK_DIR/fiod.yaml
-functional_test_fio "Fio distributed - bsrange" $BENCHMARK_DIR/fiod_bsrange.yaml
-functional_test_fio "Fio hostpath distributed" $BENCHMARK_DIR/fiod_hostpath.yaml
+functional_test_fio base
+functional_test_fio bsrange
+functional_test_fio hostpath
+kubectl label nodes -l node-role.kubernetes.io/worker=kernel-cache-dropper=no --overwrite || true

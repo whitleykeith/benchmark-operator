@@ -7,7 +7,7 @@ trap error ERR
 trap "finish byowl" EXIT
 
 function functional_test_byowl {
-  test_init $BENCHMARK_DIR/byowl.yaml
+  test_init byowl $1
   byowl_pod=$(get_pod "app=byowl-$uuid" 300)
   wait_for "kubectl -n my-ripsaw wait --for=condition=Initialized pods/$byowl_pod --timeout=500s" "500s" $byowl_pod
   wait_for "kubectl -n my-ripsaw  wait --for=condition=complete -l app=byowl-$uuid jobs --timeout=300s" "300s" $byowl_pod
@@ -16,4 +16,4 @@ function functional_test_byowl {
 }
 
 figlet $(basename $0)
-functional_test_byowl
+functional_test_byowl base
