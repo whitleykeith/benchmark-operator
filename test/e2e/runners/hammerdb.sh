@@ -1,31 +1,20 @@
 #!/usr/bin/env bash
-set -xeo pipefail
-
-source tests/common.sh
+set -xeEo pipefail
+GIT_ROOT=$(git rev-parse --show-toplevel)
+for f in $GIT_ROOT/test/e2e/util/*.sh; do source $f; done
+trap error ERR
+trap "finish hammerdb $RESOURCE_DIR/mssql.yaml" EXIT
 
 function initdb_pod {
   echo "Setting up a MS-SQL DB Pod"
-  kubectl apply -f tests/mssql.yaml
+  kubectl apply -f $RESOURCE_DIR/mssql.yaml
   mssql_pod=$(get_pod "app=mssql" 300 "sql-server")
   kubectl wait --for=condition=Ready "pods/$mssql_pod" --namespace sql-server --timeout=300s
 }
 
-function finish {
-  echo "Cleaning up hammerdb"
-  kubectl delete -f tests/mssql.yaml 
-  kubectl delete -f tests/test_crs/valid_hammerdb.yaml
-  delete_operator
-}
-
-trap finish EXIT
-
 function functional_test_hammerdb {
-  wait_clean
-  apply_operator
   initdb_pod
-  kubectl apply -f tests/test_crs/valid_hammerdb.yaml
-  long_uuid=$(get_uuid 20)
-  uuid=${long_uuid:0:8}
+  test_init $BENCHMARK_DIR/hammerdb.yaml
 
   # Wait for the workload pod to run the actual workload
   hammerdb_workload_pod=$(get_pod "app=hammerdb_workload-$uuid" 300)

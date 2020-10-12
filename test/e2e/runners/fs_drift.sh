@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#!/usr/bin/env bash
 set -xeEo pipefail
 GIT_ROOT=$(git rev-parse --show-toplevel)
 for f in $GIT_ROOT/test/e2e/util/*.sh; do source $f; done
