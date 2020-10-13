@@ -1,71 +1,23 @@
 #!/usr/bin/env bash
 set -xeEo pipefail
+GIT_ROOT=$(git rev-parse --show-toplevel)
+for f in $GIT_ROOT/test/e2e/util/*.sh; do source $f; done
+trap error ERR
+trap "finish pgbench $RESOURCES_DIR/postgres.yaml" EXIT
 
-source tests/common.sh
 
-function finish {
-  if [ $? -eq 1 ] && [ $ERRORED != "true" ]
-  then
-    error
-  fi
-
-  echo "Cleaning up pgbench"
-  wait_clean
+function inject_postgres_ip {
+  
 }
 
-trap error ERR
-trap finish EXIT
 
 # Note we don't test persistent storage here
 function functional_test_pgbench {
-  wait_clean
-  apply_operator
-  # stand up postgres deployment
-cat << EOF | kubectl apply -f -
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: postgres-config
-  namespace: my-ripsaw
-  labels:
-    app: postgres
-data:
-  POSTGRES_DB: cidb
-  POSTGRES_USER: ci
-  POSTGRES_PASSWORD: ci
-  PGDATA: /var/lib/postgresql/data/pgdata
-EOF
-cat << EOF | kubectl apply -f -
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: postgres
-  namespace: my-ripsaw
-spec:
-  selector:
-    matchLabels:
-      app: postgres
-  replicas: 1
-  selector:
-    matchLabels:
-      app: postgres
-  template:
-    metadata:
-      labels:
-        app: postgres
-    spec:
-      containers:
-        - name: postgres
-          image: postgres:10.4
-          imagePullPolicy: "IfNotPresent"
-          ports:
-            - containerPort: 5432
-          envFrom:
-            - configMapRef:
-                name: postgres-config
-EOF
-  postgres_pod=$(get_pod 'app=postgres' 300)
+  kubectl apply -f $RESOURCES_DIR/postgres.yaml
+  test_init pgbench $1
+
   # get the postgres pod IP
+  postgres_pod=$(get_pod 'app=postgres' 300)
   postgres_ip=0
   counter=0
   until [[ $postgres_ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ||  $counter -eq 10 ]]; do
@@ -95,4 +47,4 @@ EOF
 }
 
 figlet $(basename $0)
-functional_test_pgbench
+functional_test_pgbench base

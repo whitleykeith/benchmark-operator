@@ -63,14 +63,7 @@ function populate_test_list {
   done
 }
 
-# enable metadata collection for specific test
-function enable_metadata(){
-  if [[ ! -z "$ES_SERVER" ]]; then 
-      cat $1 | yq w - 'spec.elasticsearch.server' $ES_SERVER | yq w - 'spec.elasticsearch.port' ${ES_PORT:-80}
-  else 
-      cat $1 | yq w - 'spec.metadata.collection' 'false'
-  fi 
-}
+
 
 
 
@@ -189,7 +182,10 @@ function error {
 
 
 function check_es() {
-  if [[ ${#} != 2 ]]; then
+  if [[ -z "$ES_SERVER" ]]; then 
+    echo "ES_SERVER not configured, so returning true"
+    return 0 
+  elif [[ ${#} != 2 ]]; then
     echo "Wrong number of arguments: ${#}"
     return 1
   fi

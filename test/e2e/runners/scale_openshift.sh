@@ -1,35 +1,17 @@
 #!/usr/bin/env bash
 set -xeEo pipefail
-
-source tests/common.sh
-
-function finish {
-  if [ $? -eq 1 ] && [ $ERRORED != "true" ]
-  then
-    error
-  fi
-
-  echo "Cleaning up Scale Test"
-  kubectl delete -f resources/scale_role.yaml --ignore-not-found
-  wait_clean
-}
-
+GIT_ROOT=$(git rev-parse --show-toplevel)
+for f in $GIT_ROOT/test/e2e/util/*.sh; do source $f; done
 trap error ERR
-trap finish EXIT
+trap "finish scale_oc $GIT_ROOT/resources/scale_role.yaml" EXIT
+
 
 function functional_test_scale_openshift {
-  wait_clean
-  apply_operator
-  test_name=$1
-  cr=$2
-  
   # Apply scale role and service account
-  kubectl apply -f resources/scale_role.yaml
+  kubectl apply -f $GIT_ROOT/resources/scale_role.yaml.yaml
+
+  test_init scale $1
   
-  echo "Performing: ${test_name}"
-  kubectl apply -f ${cr}
-  long_uuid=$(get_uuid 20)
-  uuid=${long_uuid:0:8}
 
   scale_pod=$(get_pod "app=scale-$uuid" 300)
   wait_for "kubectl -n my-ripsaw wait --for=condition=Initialized -l app=scale-$uuid pods --timeout=300s" "300s" $scale_pod
@@ -48,5 +30,5 @@ function functional_test_scale_openshift {
 }
 
 figlet $(basename $0)
-functional_test_scale_openshift "Scale Up" tests/test_crs/valid_scale_up.yaml
-functional_test_scale_openshift "Scale Down" tests/test_crs/valid_scale_down.yaml
+functional_test_scale_openshift "up"
+functional_test_scale_openshift "down"

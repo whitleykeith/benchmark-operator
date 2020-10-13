@@ -6,18 +6,18 @@ metadata:
   namespace: my-ripsaw
 spec:
   elasticsearch:
-    server: ES_SERVER
-    port: ES_PORT
+    server: localhost
+    port: 8080
   metadata:
     collection: true
   prometheus:
     server: http://ES_SERVER
-    prom_token: PROMETHEUS_TOKEN
+    prom_token: token
     prom_url: https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091
   workload:
     name: kube-burner
     args:
-      workload: WORKLOAD
+      workload: kubelet-density
       cleanup: true
       default_index: ripsaw-kube-burner
       job_iterations: 1
@@ -31,7 +31,7 @@ spec:
       verify_objects: true
       error_on_verify: true
       step: 30s
-      metrics_profile: METRICS_PROFILE
+      metrics_profile: metrics.yaml
       node_selector:
         key: node-role.kubernetes.io/worker
         value:

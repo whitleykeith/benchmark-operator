@@ -3,15 +3,18 @@
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
 source $GIT_ROOT/test/e2e/util/common.sh
+source $GIT_ROOT/test/e2e/util/benchmark_injections.sh
 
 
 function test_init {
   benchmark_name=$1
   benchmark_profile=$2
+  custom_func=$3
+
   test_name="$1 - $2"
   cr=$BENCHMARK_DIR/$1/$2.yaml
   echo "Performing: ${test_name}"
-  enable_metadata $cr | kubectl apply -f -
+  cat $cr | enable_metadata | inject_prometheus_token | inject_postgres_ip | kubectl apply -f -
   long_uuid=$(get_uuid 20)
   uuid=${long_uuid:0:8}
 }

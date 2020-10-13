@@ -33,8 +33,10 @@ build_image:
 
 .PHONY: deploy_operator
 deploy_operator: deploy_operator_dependencies
-	BENCHMARK_OPERATOR_IMAGE=${IMAGE_REPO}:${IMAGE_TAG}
-	cat resources/operator.yaml | yq w - 'spec.template.spec.containers.(name==benchmark-operator).image' ${BENCHMARK_OPERATOR_IMAGE} | kubectl apply -f -
+	cat resources/operator.yaml | \
+		yq w - 'spec.template.spec.containers.(name==benchmark-operator).image' ${IMAGE_REPO}:${IMAGE_TAG} | \
+		yq w - 'spec.template.spec.containers.(name==ansible).image' ${IMAGE_REPO}:${IMAGE_TAG} | \
+		kubectl apply -f -
 	kubectl wait --for=condition=available "deployment/benchmark-operator" -n my-ripsaw --timeout=300s
 
 
