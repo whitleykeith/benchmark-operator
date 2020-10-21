@@ -1,33 +1,30 @@
----
 apiVersion: ripsaw.cloudbulldozer.io/v1alpha1
 kind: Benchmark
 metadata:
-  name: vegeta-benchmark-hostnetwork
+  name: smallfile-base
   namespace: my-ripsaw
 spec:
+  test_user: homer_simpson
+  # to separate this test run from everyone else's
+  clustername: test_ci
   system_metrics:
     collection: true
     prom_url: https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091
     es_url: ES_SERVER
     prom_token: PROMETHEUS_TOKEN
     metrics_profile: node-metrics.yml
+  # where elastic search is running
   elasticsearch:
-    url: ES_SERVER
-    index_name: ripsaw-vegeta
+    server: localhost
+    index_name: ripsaw-smallfile
   metadata:
     collection: true
-    serviceaccount: benchmark-operator
   workload:
-    name: vegeta
+    name: smallfile
     args:
-      hostnetwork: true
       clients: 2
-      targets:
-        - name: 2w-ka
-          urls:
-            - GET https://1.1.1.1
-          samples: 1
-          workers: 2
-          duration: 5
-          keepalive: true
+      operation: ["create", "read", "append", "delete"]
+      threads: 1
+      file_size: 0
+      files: 100000
       debug: true

@@ -1,15 +1,20 @@
 apiVersion: ripsaw.cloudbulldozer.io/v1alpha1
 kind: Benchmark
 metadata:
-  name: ycsb-mongo-benchmark
+  name: ycsb-base
   namespace: my-ripsaw
 spec:
+  system_metrics:
+    collection: true
+    prom_url: https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091
+    es_url: ES_SERVER
+    prom_token: PROMETHEUS_TOKEN
+    metrics_profile: node-metrics.yml
   elasticsearch:
-    server: ES_SERVER
-    port: ES_PORT
+    server: localhost
     index_name: ripsaw-ycsb
   metadata:
-    collection: true
+    collection: false
   workload:
     name: ycsb
     args:
@@ -22,3 +27,4 @@ spec:
         - workloada
       options_load: '-p mongodb.url="mongodb://mongo-0.mongo/ycsb?"' #passed as is to ycsb when loading database
       options_run: '-p mongodb.url="mongodb://mongo-0.mongo/ycsb?" -threads 10 -target 100'
+      debug: true
