@@ -1,0 +1,167 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: benchmarks.ripsaw.cloudbulldozer.io.ripsaw.cloudbulldozer.io
+spec:
+  group: ripsaw.cloudbulldozer.io.ripsaw.cloudbulldozer.io
+  names:
+    kind: Benchmark
+    listKind: BenchmarkList
+    plural: benchmarks
+    singular: benchmark
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Benchmark is the Schema for the benchmarks API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: Spec defines the desired state of Benchmark
+            type: object
+            x-kubernetes-preserve-unknown-fields: true
+            properties:
+              uuid: 
+                type: string
+              elasticsearch:
+                type: object
+                properties:
+                  server:
+                    type: string
+                  port:
+                    type: integer
+                  index_name:
+                    type: string
+                  parallel:
+                    type: boolean
+              prometheus:
+                type: object
+                properties:
+                  es_server:
+                    type: string
+                  es_port: 
+                    type: integer
+                  es_parallel:
+                    type: boolean
+                  prom_url:
+                    type: string
+                  prom_token:
+                    type: string
+              workload:
+                x-kubernetes-preserve-unknown-fields: true
+                type: object
+              job_params:
+                type: array
+                items:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+              global_overrides:
+                type: array
+                items:
+                  type: string
+                  x-kubernetes-preserve-unknown-fields: true
+              metadata:
+                default: {}
+                properties:
+                  collection:
+                    default: false
+                    type: boolean
+                  force:
+                    default: false
+                    type: boolean
+                  image:
+                    default: "quay.io/cloud-bulldozer/backpack:latest"
+                    type: string
+                  label:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  privileged:
+                    default: false
+                    type: boolean
+                  serviceaccount:
+                    default: default
+                    type: string
+                  stockpileSkipTags:
+                    default: []
+                    items:
+                      type: string
+                    type: array
+                  stockpileTags:
+                    default: ["common", "k8s", "openshift"]
+                    items:
+                      type: string
+                    type: array
+                  targeted:
+                    default: true
+                    type: boolean
+                type: object
+              cerberus_url:
+                type: string
+              cleanup:
+                type: boolean
+              test_user:
+                type: string
+              clustername:
+                type: string
+              hostpath:
+                type: string
+              drop_cache_kernel:
+                type: boolean
+          status:
+            description: Status defines the observed state of Benchmark
+            type: object
+            x-kubernetes-preserve-unknown-fields: true
+            properties:
+              complete:
+                type: boolean
+              metadata:
+                type: string
+              state:
+                type: string
+              suuid:
+                type: string
+              uuid:
+                type: string
+              cerberus:
+                type: string
+        type: object
+    served: true
+    storage: true
+    additionalPrinterColumns:
+    - name: Type
+      type: string
+      description: The type of test to perform
+      jsonPath: .spec.workload.name
+    - name: State
+      type: string
+      description: The state of the benchmark
+      jsonPath: .status.state
+    - name: Metadata State
+      type: string
+      description: The state of metadata collection
+      jsonPath: .status.metadata
+    - name: Cerberus
+      type: string
+      description: If Cerberus is connected or not
+      jsonPath: .status.cerberus
+    - name: UUID
+      type: string
+      jsonPath: .status.uuid
+    - name: Age
+      type: date
+      jsonPath: .metadata.creationTimestamp
+    subresources:
+      status: {}

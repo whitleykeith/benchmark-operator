@@ -2,6 +2,6 @@
 - version: v1alpha1
   group: ripsaw.cloudbulldozer.io
   kind: Benchmark
-  playbook: /opt/ansible/playbook.yml
+  playbook: playbooks/playbook.yml
   reconcilePeriod: 3s
   manageStatus: false

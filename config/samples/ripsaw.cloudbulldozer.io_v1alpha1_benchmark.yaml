@@ -1,0 +1,6 @@
+apiVersion: ripsaw.cloudbulldozer.io.ripsaw.cloudbulldozer.io/v1alpha1
+kind: Benchmark
+metadata:
+  name: benchmark-sample
+spec:
+  foo: bar

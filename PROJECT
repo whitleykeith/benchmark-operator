@@ -1,0 +1,8 @@
+domain: ripsaw.cloudbulldozer.io
+layout: ansible.sdk.operatorframework.io/v1
+projectName: benchmark-operator
+resources:
+- group: ripsaw.cloudbulldozer.io
+  kind: Benchmark
+  version: v1alpha1
+version: 3-alpha
